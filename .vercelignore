@@ -1,0 +1,22 @@
+# Files to ignore during Vercel deployment
+
+# Scripts
+scripts/
+
+# Documentation
+*.md
+!README.md
+
+# Development files
+.vscode/
+.idea/
+*.log
+
+# Testing
+coverage/
+__tests__/
+
+# Environment
+.env.local
+.env.*.local
+
