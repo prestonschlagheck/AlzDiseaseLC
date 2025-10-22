@@ -1,12 +1,17 @@
 'use client'
 
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion } from 'framer-motion'
 import Image from 'next/image'
+import { useState, useEffect } from 'react'
 
 export function Hero() {
-  const { scrollY } = useScroll()
-  const opacity = useTransform(scrollY, [0, 300], [1, 0])
-  const scale = useTransform(scrollY, [0, 300], [1, 0.95])
+  const [dimensions, setDimensions] = useState({ width: 1920, height: 1080 })
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setDimensions({ width: window.innerWidth, height: window.innerHeight })
+    }
+  }, [])
   
   const scrollToWithOffset = (id: string) => {
     const el = document.getElementById(id)
@@ -16,44 +21,42 @@ export function Hero() {
     window.scrollTo({ top: y, behavior: 'smooth' })
   }
   return (
-    <motion.section 
-      style={{ opacity, scale }}
-      className="relative min-h-[calc(100vh-4rem)] lg:h-[75vh] overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800"
+    <section className="relative min-h-[calc(100vh-4rem)] lg:h-[75vh] overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800"
     >
       {/* Sophisticated Background Patterns */}
       <div className="absolute inset-0">
         {/* Animated Particles */}
         <div className="absolute inset-0">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 bg-blue-400/30 rounded-full"
-              initial={{
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-              }}
-              animate={{
-                x: [
-                  Math.random() * window.innerWidth,
-                  Math.random() * window.innerWidth,
-                  Math.random() * window.innerWidth,
-                ],
-                y: [
-                  Math.random() * window.innerHeight,
-                  Math.random() * window.innerHeight,
-                  Math.random() * window.innerHeight,
-                ],
-                opacity: [0.3, 0.8, 0.3],
-                scale: [1, 1.5, 1],
-              }}
-              transition={{
-                duration: 20 + Math.random() * 10,
-                repeat: Infinity,
-                ease: "linear",
-                delay: Math.random() * 5,
-              }}
-            />
-          ))}
+          {Array.from({ length: 20 }).map((_, i) => {
+            const randomX1 = Math.random() * dimensions.width
+            const randomY1 = Math.random() * dimensions.height
+            const randomX2 = Math.random() * dimensions.width
+            const randomY2 = Math.random() * dimensions.height
+            const randomX3 = Math.random() * dimensions.width
+            const randomY3 = Math.random() * dimensions.height
+            return (
+              <motion.div
+                key={i}
+                className="absolute w-1 h-1 bg-blue-400/30 rounded-full"
+                initial={{
+                  x: randomX1,
+                  y: randomY1,
+                }}
+                animate={{
+                  x: [randomX1, randomX2, randomX3],
+                  y: [randomY1, randomY2, randomY3],
+                  opacity: [0.3, 0.8, 0.3],
+                  scale: [1, 1.5, 1],
+                }}
+                transition={{
+                  duration: 20 + Math.random() * 10,
+                  repeat: Infinity,
+                  ease: "linear",
+                  delay: Math.random() * 5,
+                }}
+              />
+            )
+          })}
         </div>
 
         {/* Medical Grid Pattern */}
@@ -186,29 +189,11 @@ export function Hero() {
             className="text-center"
           >
             <h1 className="heading-font text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight text-shadow-md">
-              <motion.span
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-              >
-                Alzheimer&apos;s Disease Learning Center
-              </motion.span>
+              Alzheimer&apos;s Disease Learning Center
               <br />
-              <motion.span 
-                className="bg-gradient-to-r from-blue-300 via-teal-300 to-blue-300 bg-clip-text text-transparent bg-[length:200%_auto]"
-                animate={{
-                  backgroundPosition: ['0% center', '200% center'],
-                }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-                initial={{ opacity: 0, x: 20 }}
-                style={{ backgroundPosition: '0% center' }}
-              >
+              <span className="bg-gradient-to-r from-blue-300 to-teal-300 bg-clip-text text-transparent">
                 Evidence-Based Knowledge for Real-World Impact Across the Journey
-              </motion.span>
+              </span>
             </h1>
           </motion.div>
 
@@ -281,6 +266,6 @@ export function Hero() {
       </div>
 
 
-    </motion.section>
+    </section>
   )
 } 
