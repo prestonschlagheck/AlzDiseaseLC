@@ -14,8 +14,8 @@ export default function Home() {
       <div className="pt-16 lg:pt-20"> {/* Adjusted mobile padding to prevent header overlap */}
         <Hero />
         <VideoIntroduction />
-        <Statistics />
         <EducationalPrograms />
+        <Statistics />
         <Faculty />
         <ResourceCenter />
         <Footer />

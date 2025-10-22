@@ -1,9 +1,13 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import Image from 'next/image'
 
 export function Hero() {
+  const { scrollY } = useScroll()
+  const opacity = useTransform(scrollY, [0, 300], [1, 0])
+  const scale = useTransform(scrollY, [0, 300], [1, 0.95])
+  
   const scrollToWithOffset = (id: string) => {
     const el = document.getElementById(id)
     if (!el) return
@@ -12,23 +16,114 @@ export function Hero() {
     window.scrollTo({ top: y, behavior: 'smooth' })
   }
   return (
-    <section className="relative min-h-[calc(100vh-4rem)] lg:h-[75vh] overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
+    <motion.section 
+      style={{ opacity, scale }}
+      className="relative min-h-[calc(100vh-4rem)] lg:h-[75vh] overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800"
+    >
       {/* Sophisticated Background Patterns */}
       <div className="absolute inset-0">
+        {/* Animated Particles */}
+        <div className="absolute inset-0">
+          {Array.from({ length: 20 }).map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-blue-400/30 rounded-full"
+              initial={{
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+              }}
+              animate={{
+                x: [
+                  Math.random() * window.innerWidth,
+                  Math.random() * window.innerWidth,
+                  Math.random() * window.innerWidth,
+                ],
+                y: [
+                  Math.random() * window.innerHeight,
+                  Math.random() * window.innerHeight,
+                  Math.random() * window.innerHeight,
+                ],
+                opacity: [0.3, 0.8, 0.3],
+                scale: [1, 1.5, 1],
+              }}
+              transition={{
+                duration: 20 + Math.random() * 10,
+                repeat: Infinity,
+                ease: "linear",
+                delay: Math.random() * 5,
+              }}
+            />
+          ))}
+        </div>
+
         {/* Medical Grid Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="grid grid-cols-12 h-full">
             {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="border-r border-blue-300/20 h-full" />
+              <motion.div 
+                key={i} 
+                className="border-r border-blue-300/20 h-full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: i * 0.05 }}
+              />
             ))}
           </div>
           <div className="absolute inset-0 grid grid-rows-8">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="border-b border-blue-300/20 w-full" />
+              <motion.div 
+                key={i} 
+                className="border-b border-blue-300/20 w-full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: i * 0.05 }}
+              />
             ))}
           </div>
         </div>
 
+        {/* Floating Orbs */}
+        <motion.div
+          className="absolute top-20 left-10 w-96 h-96 bg-blue-500/20 rounded-full filter blur-3xl"
+          animate={{
+            x: [0, 50, 0],
+            y: [0, 30, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-teal-500/20 rounded-full filter blur-3xl"
+          animate={{
+            x: [0, -50, 0],
+            y: [0, -30, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1,
+          }}
+        />
+        <motion.div
+          className="absolute top-1/2 left-1/2 w-96 h-96 bg-purple-500/10 rounded-full filter blur-3xl"
+          animate={{
+            x: [-50, 50, -50],
+            y: [-30, 30, -30],
+            scale: [1, 1.15, 1],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2,
+          }}
+        />
 
         {/* Dynamic Gradient Overlays */}
         <motion.div
@@ -57,12 +152,21 @@ export function Hero() {
           
           {/* Logo - Centered Above Title */}
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
+            initial={{ opacity: 0, y: -30, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ 
+              duration: 0.8, 
+              delay: 0.2,
+              type: "spring",
+              stiffness: 100
+            }}
             className="flex justify-center"
           >
-            <div className="relative w-full max-w-[200px] h-[150px]">
+            <motion.div 
+              className="relative w-full max-w-[200px] h-[150px]"
+              whileHover={{ scale: 1.05, rotate: [0, -2, 2, 0] }}
+              transition={{ duration: 0.3 }}
+            >
               <Image
                 src="/Untitled design.png"
                 alt="Alzheimer's Disease Learning Center Logo"
@@ -71,59 +175,107 @@ export function Hero() {
                 sizes="200px"
                 priority
               />
-            </div>
+            </motion.div>
           </motion.div>
 
           {/* Main Title - Full Width */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2, delay: 0.2 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
             className="text-center"
           >
             <h1 className="heading-font text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight text-shadow-md">
-              Alzheimer&apos;s Disease Learning Center
+              <motion.span
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+              >
+                Alzheimer&apos;s Disease Learning Center
+              </motion.span>
               <br />
-              <span className="bg-gradient-to-r from-blue-300 to-teal-300 bg-clip-text text-transparent">
+              <motion.span 
+                className="bg-gradient-to-r from-blue-300 via-teal-300 to-blue-300 bg-clip-text text-transparent bg-[length:200%_auto]"
+                animate={{
+                  backgroundPosition: ['0% center', '200% center'],
+                }}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+                initial={{ opacity: 0, x: 20 }}
+                style={{ backgroundPosition: '0% center' }}
+              >
                 Evidence-Based Knowledge for Real-World Impact Across the Journey
-              </span>
+              </motion.span>
             </h1>
           </motion.div>
 
           {/* Description - Full Width */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.7 }}
             className="space-y-6 text-center"
           >
-            <p className="text-sm sm:text-base lg:text-lg text-blue-100 leading-relaxed font-sans max-w-5xl mx-auto">
+            <motion.p 
+              className="text-sm sm:text-base lg:text-lg text-blue-100 leading-relaxed font-sans max-w-5xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8 }}
+            >
               Your trusted hub for Alzheimer&apos;s education grounded in peer-reviewed science and designed for real-world impact. Through expert interviews, case discussions, multidisciplinary panels, and patient-caregiver perspectives, leading clinicians translate current evidence into actionable steps for screening, diagnosis, treatment, and longitudinal support.
-            </p>
-            <p className="text-sm sm:text-base lg:text-lg text-blue-100 leading-relaxed font-sans max-w-5xl mx-auto">
+            </motion.p>
+            <motion.p 
+              className="text-sm sm:text-base lg:text-lg text-blue-100 leading-relaxed font-sans max-w-5xl mx-auto"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.9 }}
+            >
               Join a community of neurology, psychiatry, geriatrics, primary care, nursing, pharmacy, and neuropsychology professionals, engage with concise modules, current up-to-date guidelines, and practical tools you can use in the clinic today.
-            </p>
+            </motion.p>
           </motion.div>
 
           {/* CTA Buttons - Centered */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.4 }}
+            transition={{ duration: 0.6, delay: 1.0 }}
             className="flex justify-center items-center gap-4 pt-4"
           >
-            <button 
+            <motion.button 
               onClick={() => scrollToWithOffset('activities')}
-              className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
+              className="relative overflow-hidden bg-gradient-to-r from-blue-500 to-teal-500 text-white px-8 py-4 rounded-xl font-semibold shadow-xl group"
+              whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0, 0, 0, 0.3)" }}
+              whileTap={{ scale: 0.95 }}
             >
-              Explore Activities
-            </button>
-            <button 
+              <motion.span
+                className="absolute inset-0 bg-gradient-to-r from-blue-600 to-teal-600"
+                initial={{ x: '-100%' }}
+                whileHover={{ x: 0 }}
+                transition={{ duration: 0.3 }}
+              />
+              <span className="relative z-10">Explore Activities</span>
+            </motion.button>
+            <motion.button 
               onClick={() => scrollToWithOffset('resource-center')}
-              className="px-6 py-3 rounded-xl font-semibold transition-all duration-300 border border-white/60 text-white/90 hover:bg-white/10 hover:shadow-xl"
+              className="relative px-8 py-4 rounded-xl font-semibold border-2 border-white/60 text-white/90 backdrop-blur-sm overflow-hidden group"
+              whileHover={{ 
+                scale: 1.05, 
+                borderColor: "rgba(255, 255, 255, 0.9)",
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+              }}
+              whileTap={{ scale: 0.95 }}
             >
-              Explore Resources
-            </button>
+              <motion.span
+                className="absolute inset-0 bg-white/10"
+                initial={{ scale: 0, opacity: 0 }}
+                whileHover={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              />
+              <span className="relative z-10">Explore Resources</span>
+            </motion.button>
           </motion.div>
         </div>
       </div>

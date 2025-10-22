@@ -3,6 +3,7 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import { TrendingUp, Users, MapPin } from 'lucide-react'
+import { AnimatedCounter } from './AnimatedCounter'
 
 export function VideoIntroduction() {
   const ref = useRef(null)
@@ -11,14 +12,16 @@ export function VideoIntroduction() {
   const impactStats = [
     {
       icon: <Users size={32} className="text-blue-600" />,
-      value: '101.2M',
+      value: 101.2,
+      suffix: 'M',
       label: 'Projected Adults 65+ with AD by 2050',
       description: 'It is estimated that by 2050, 101.2 million adults aged 65+ will have Alzheimer\'s Disease (AD).',
       gradient: 'from-blue-500 to-blue-600'
     },
     {
       icon: <TrendingUp size={32} className="text-teal-600" />,
-      value: '23.2M',
+      value: 23.2,
+      suffix: 'M',
       label: 'Projected US MASD Cases by 2050',
       description: 'It is estimated that in 2020, 18.8 million adults in the US had MASD, which is expected to increase to 23.2 million by 2050.',
       gradient: 'from-teal-500 to-teal-600'
@@ -27,11 +30,72 @@ export function VideoIntroduction() {
 
   return (
     <section ref={ref} id="comprehensive-hub" className="py-12 bg-gradient-to-br from-slate-50 to-blue-50 relative overflow-hidden">
-      {/* Background Elements */}
+      {/* Enhanced Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-teal-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse animation-delay-2s"></div>
-        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-cyan-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse animation-delay-4s"></div>
+        <motion.div 
+          className="absolute top-20 left-10 w-72 h-72 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-70"
+          animate={{
+            x: [0, 50, 0],
+            y: [0, 30, 0],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div 
+          className="absolute top-40 right-10 w-72 h-72 bg-teal-100 rounded-full mix-blend-multiply filter blur-xl opacity-70"
+          animate={{
+            x: [0, -30, 0],
+            y: [0, 50, 0],
+            scale: [1, 1.3, 1],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1,
+          }}
+        />
+        <motion.div 
+          className="absolute -bottom-8 left-20 w-72 h-72 bg-cyan-100 rounded-full mix-blend-multiply filter blur-xl opacity-70"
+          animate={{
+            x: [0, 40, 0],
+            y: [0, -20, 0],
+            scale: [1, 1.15, 1],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2,
+          }}
+        />
+        
+        {/* Floating particles */}
+        {Array.from({ length: 10 }).map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-blue-400/20 rounded-full"
+            initial={{
+              x: Math.random() * 1000,
+              y: Math.random() * 500,
+            }}
+            animate={{
+              y: [Math.random() * 500, Math.random() * 500, Math.random() * 500],
+              x: [Math.random() * 1000, Math.random() * 1000, Math.random() * 1000],
+              opacity: [0.2, 0.5, 0.2],
+            }}
+            transition={{
+              duration: 15 + Math.random() * 10,
+              repeat: Infinity,
+              ease: "linear",
+              delay: Math.random() * 5,
+            }}
+          />
+        ))}
       </div>
 
       <div className="max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
@@ -69,7 +133,11 @@ export function VideoIntroduction() {
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+              whileHover={{ 
+                y: -8,
+                boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
+              }}
+              className="relative bg-white rounded-2xl shadow-lg transition-all duration-300 overflow-hidden group cursor-default"
             >
               {/* Gradient Top Border */}
               <div className={`h-2 bg-gradient-to-r ${stat.gradient}`}></div>
@@ -80,7 +148,7 @@ export function VideoIntroduction() {
                   {stat.icon}
                 </div>
 
-                {/* Large Number */}
+                {/* Large Number - Animated Counter */}
                 <motion.div
                   initial={{ scale: 0 }}
                   whileInView={{ scale: 1 }}
@@ -89,7 +157,12 @@ export function VideoIntroduction() {
                   className="mb-3"
                 >
                   <div className={`text-5xl lg:text-6xl font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent`}>
-                    {stat.value}
+                    <AnimatedCounter 
+                      value={stat.value} 
+                      suffix={stat.suffix} 
+                      duration={2.5}
+                      decimals={1}
+                    />
                   </div>
                 </motion.div>
 
@@ -113,7 +186,11 @@ export function VideoIntroduction() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="relative bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group"
+          whileHover={{ 
+            y: -8,
+            boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
+          }}
+          className="relative bg-white rounded-2xl shadow-lg transition-all duration-300 overflow-hidden group cursor-default"
         >
           {/* Gradient Top Border */}
           <div className="h-2 bg-gradient-to-r from-indigo-500 to-indigo-600"></div>
