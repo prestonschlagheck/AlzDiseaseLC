@@ -6,6 +6,7 @@ import { Faculty } from '../components/Faculty'
 import { ResourceCenter } from '../components/ResourceCenter'
 import { Footer } from '../components/Footer'
 import { Header } from '../components/Header'
+import NewsFeed from '../components/NewsFeed'
 
 export default function Home() {
   return (
@@ -16,6 +17,7 @@ export default function Home() {
         <VideoIntroduction />
         <EducationalPrograms />
         <Statistics />
+        <NewsFeed />
         <Faculty />
         <ResourceCenter />
         <Footer />
