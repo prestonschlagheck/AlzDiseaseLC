@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart } from 'lucide-react';
 import type { NewsPost } from '@/lib/supabase';
@@ -88,6 +89,7 @@ export default function NewsFeed() {
                               {/* Image */}
                               <div className="relative h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
                                 {post.image_url ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
                                   <img
                                     src={post.image_url}
                                     alt={post.title}
@@ -155,6 +157,7 @@ export default function NewsFeed() {
                   {/* Image */}
                   <div className="relative h-64 md:h-96 bg-gray-200 -mt-16 flex items-center justify-center overflow-hidden">
                     {selectedPost.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={selectedPost.image_url}
                         alt={selectedPost.title}

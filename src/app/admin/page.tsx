@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import type { NewsPost } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -482,7 +483,7 @@ export default function AdminDashboard() {
       <div className="bg-white shadow-md border-b-2 border-slate-100">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-6 flex justify-between items-center">
           <h1 className="text-3xl lg:text-4xl font-bold text-slate-900">
-            Alzheimer's LC{' '}
+            Alzheimer&apos;s LC{' '}
             <span className="bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">Admin Dashboard</span>
           </h1>
           <div className="flex items-center gap-4">
@@ -615,6 +616,7 @@ export default function AdminDashboard() {
                       )}
                     </div>
                     {formData.image_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={formData.image_url}
                         alt="Preview"
@@ -691,6 +693,7 @@ export default function AdminDashboard() {
                               {/* Image */}
                               <div className="relative h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
                                 {post.image_url ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
                                   <img
                                     src={post.image_url}
                                     alt={post.title}
@@ -812,6 +815,7 @@ export default function AdminDashboard() {
                   {/* Image */}
                   <div className="relative h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
                     {post.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={post.image_url}
                         alt={post.title}
