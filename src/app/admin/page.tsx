@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import type { NewsPost } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { 
   LogOut, 
   Plus, 
@@ -16,12 +15,13 @@ import {
   PinOff, 
   X, 
   Upload,
-  GripVertical,
   Heart,
   Eye,
   EyeOff,
   Copy,
-  RotateCcw
+  RotateCcw,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -45,6 +45,7 @@ export default function AdminDashboard() {
   const [uploading, setUploading] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState('');
   const [deletedPosts, setDeletedPosts] = useState<NewsPost[]>([]);
+  const [columnsPerRow, setColumnsPerRow] = useState(3);
 
   useEffect(() => {
     checkUser();
@@ -55,6 +56,24 @@ export default function AdminDashboard() {
       fetchPosts();
     }
   }, [user]);
+
+  useEffect(() => {
+    // Determine columns per row based on window size
+    const updateColumns = () => {
+      if (typeof window === 'undefined') return;
+      if (window.innerWidth >= 1024) {
+        setColumnsPerRow(3); // lg: 3 columns
+      } else if (window.innerWidth >= 768) {
+        setColumnsPerRow(2); // md: 2 columns
+      } else {
+        setColumnsPerRow(1); // mobile: 1 column
+      }
+    };
+
+    updateColumns();
+    window.addEventListener('resize', updateColumns);
+    return () => window.removeEventListener('resize', updateColumns);
+  }, []);
 
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -100,9 +119,18 @@ export default function AdminDashboard() {
       console.log('Fetched posts:', data.posts);
       console.log('Number of posts:', data.posts?.length || 0);
       
-      // Separate deleted and active posts
+      // Separate deleted and active posts, then sort: pinned first, then by display_order
       const allPosts = data.posts || [];
-      setPosts(allPosts.filter((p: NewsPost) => !p.deleted));
+      const activePosts = allPosts
+        .filter((p: NewsPost) => !p.deleted)
+        .sort((a: NewsPost, b: NewsPost) => {
+          // Pinned posts first
+          if (a.is_pinned && !b.is_pinned) return -1;
+          if (!a.is_pinned && b.is_pinned) return 1;
+          // Then by display_order
+          return (a.display_order || 0) - (b.display_order || 0);
+        });
+      setPosts(activePosts);
       setDeletedPosts(allPosts.filter((p: NewsPost) => p.deleted));
     } catch (error) {
       console.error('Error fetching posts:', error);
@@ -388,12 +416,36 @@ export default function AdminDashboard() {
     setShowForm(true);
   };
 
-  const handleDragEnd = async (result: DropResult) => {
-    if (!result.destination) return;
-
+  const movePost = async (postIndex: number, direction: 'left' | 'right') => {
+    // Don't allow moving pinned posts
+    if (posts[postIndex].is_pinned) return;
+    
+    // Calculate which row this post is in
+    const currentRow = Math.floor(postIndex / columnsPerRow);
+    const currentCol = postIndex % columnsPerRow;
+    
+    let targetIndex: number;
+    
+    if (direction === 'left') {
+      // Move left within the same row
+      if (currentCol === 0) return; // Already at leftmost position
+      targetIndex = postIndex - 1;
+    } else {
+      // Move right within the same row
+      targetIndex = postIndex + 1;
+      // Check if target is in the same row
+      const targetRow = Math.floor(targetIndex / columnsPerRow);
+      if (targetRow !== currentRow) return; // Would move to next row
+      if (targetIndex >= posts.length) return; // Would go beyond array
+    }
+    
+    // Double-check target is in the same row
+    const targetRow = Math.floor(targetIndex / columnsPerRow);
+    if (targetRow !== currentRow) return; // Can't move between rows
+    
     const items = Array.from(posts);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
+    const [movedItem] = items.splice(postIndex, 1);
+    items.splice(targetIndex, 0, movedItem);
 
     setPosts(items);
 
@@ -657,148 +709,180 @@ export default function AdminDashboard() {
               No posts yet. Create your first post to get started!
             </p>
           ) : (
-            <div className="overflow-hidden">
-              <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="posts">
-                  {(provided) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {posts.map((post, index) => {
+                const currentRow = Math.floor(index / columnsPerRow);
+                const currentCol = index % columnsPerRow;
+                
+                // Check if can move left (not at leftmost position)
+                const canMoveLeft = !post.is_pinned && currentCol > 0;
+                
+                // Check if can move right (not at rightmost position AND target is in same row)
+                const nextIndex = index + 1;
+                const nextRow = Math.floor(nextIndex / columnsPerRow);
+                const canMoveRight = !post.is_pinned && 
+                                     nextIndex < posts.length && 
+                                     nextRow === currentRow;
+                
+                return (
+                  <motion.div
+                    key={post.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{
+                      layout: { duration: 0.3, ease: "easeInOut" },
+                      opacity: { duration: 0.2 },
+                      scale: { duration: 0.2 }
+                    }}
+                    className={`bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-slate-200 ${
+                      post.is_pinned ? 'ring-2 ring-blue-400' : ''
+                    }`}
+                  >
+                    {/* Arrow Controls */}
                     <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                      className={`p-4 flex items-center justify-center gap-2 transition-colors ${
+                        post.is_pinned 
+                          ? 'bg-gradient-to-r from-blue-100 to-teal-100' 
+                          : 'bg-slate-100'
+                      }`}
                     >
-                      {posts.map((post, index) => (
-                        <Draggable key={post.id} draggableId={post.id} index={index} isDragDisabled={post.is_pinned}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              style={{
-                                ...provided.draggableProps.style,
-                                ...(snapshot.isDragging && {
-                                  // Constrain to horizontal movement only by removing translateY
-                                  transform: provided.draggableProps.style?.transform?.replace(/,\s*translateY\([^)]+\)/g, '') || provided.draggableProps.style?.transform,
-                                  position: 'relative' as const,
-                                }),
-                              }}
-                              className={`bg-white rounded-3xl shadow-xl overflow-hidden border-2 transition-all ${
-                                snapshot.isDragging ? 'border-blue-500 scale-105 z-50' : 'border-slate-200'
-                              } ${post.is_pinned ? 'ring-2 ring-blue-400' : ''}`}
-                            >
-                              {/* Drag Handle */}
-                              <div
-                                {...(post.is_pinned ? {} : provided.dragHandleProps)}
-                                className={`p-4 flex items-center justify-center transition-colors ${
-                                  post.is_pinned 
-                                    ? 'bg-gradient-to-r from-blue-100 to-teal-100 cursor-not-allowed' 
-                                    : 'bg-slate-100 cursor-grab active:cursor-grabbing hover:bg-slate-200'
-                                }`}
-                              >
-                                <GripVertical className="w-5 h-5 text-slate-400" />
-                                <span className="text-xs text-slate-600 ml-2 font-semibold">
-                                  {post.is_pinned ? 'Pinned to top' : 'Drag to reorder'}
-                                </span>
-                              </div>
-
-                              {/* Image */}
-                              <div className="relative h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
-                                {post.image_url ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img
-                                    src={post.image_url}
-                                    alt={post.title}
-                                    className="max-w-full max-h-full object-contain"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center bg-gray-300">
-                                    <Heart className="w-16 h-16 text-gray-400" strokeWidth={1.5} />
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Content */}
-                              <div className="p-6">
-                                <h3 className="font-bold text-slate-900 text-lg mb-3">
-                                  {post.title}
-                                </h3>
-                                <p className="text-sm text-slate-500 mb-4">
-                                  By {post.author} • {new Date(post.created_at).toLocaleDateString()}
-                                </p>
-                                <p className="text-slate-600 line-clamp-2 text-sm mb-6 leading-relaxed">
-                                  {post.content}
-                                </p>
-
-                                {/* Action Buttons */}
-                                <div className="flex flex-col gap-2 pt-3 border-t border-slate-200">
-                                  {/* Row 1: Edit and Publish */}
-                                  <div className="grid grid-cols-2 gap-2">
-                                    <button
-                                      onClick={() => handleEdit(post)}
-                                      className="flex items-center justify-center gap-2 py-2.5 px-4 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-all font-semibold text-sm"
-                                    >
-                                      <Edit2 className="w-4 h-4" />
-                                      Edit
-                                    </button>
-                                    <button
-                                      onClick={() => handleTogglePublish(post)}
-                                      className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg transition-all font-semibold text-sm ${
-                                        post.published
-                                          ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                                          : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
-                                      }`}
-                                    >
-                                      {post.published ? (
-                                        <>
-                                          <Eye className="w-4 h-4" />
-                                          Unpublish
-                                        </>
-                                      ) : (
-                                        <>
-                                          <EyeOff className="w-4 h-4" />
-                                          Publish
-                                        </>
-                                      )}
-                                    </button>
-                                  </div>
-                                  
-                                  {/* Row 2: Duplicate, Pin, and Delete */}
-                                  <div className="grid grid-cols-3 gap-2">
-                                    <button
-                                      onClick={() => handleDuplicate(post)}
-                                      className="flex items-center justify-center gap-1 py-2 px-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-xs font-semibold"
-                                    >
-                                      <Copy className="w-4 h-4" />
-                                      Duplicate
-                                    </button>
-                                    <button
-                                      onClick={() => handleTogglePin(post)}
-                                      className={`flex items-center justify-center gap-1 py-2 px-2 rounded-lg transition-all text-xs font-semibold ${
-                                        post.is_pinned
-                                          ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white'
-                                          : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
-                                      }`}
-                                    >
-                                      {post.is_pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
-                                      {post.is_pinned ? 'Unpin' : 'Pin'}
-                                    </button>
-                                    <button
-                                      onClick={() => handleDelete(post.id)}
-                                      className="flex items-center justify-center gap-1 py-2 px-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-xs font-semibold"
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                      Delete
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
+                      {post.is_pinned ? (
+                        <span className="text-xs text-slate-600 font-semibold">
+                          Pinned to top
+                        </span>
+                      ) : (
+                        <>
+                          <motion.button
+                            onClick={() => movePost(index, 'left')}
+                            disabled={!canMoveLeft}
+                            whileHover={canMoveLeft ? { scale: 1.1 } : {}}
+                            whileTap={canMoveLeft ? { scale: 0.9 } : {}}
+                            className={`p-2 rounded-lg transition-all ${
+                              canMoveLeft
+                                ? 'bg-white text-slate-700 hover:bg-blue-500 hover:text-white shadow-sm hover:shadow-md'
+                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                            }`}
+                            title="Move left"
+                          >
+                            <ChevronLeft className="w-5 h-5" />
+                          </motion.button>
+                          <span className="text-xs text-slate-600 font-semibold px-2">
+                            Reorder
+                          </span>
+                          <motion.button
+                            onClick={() => movePost(index, 'right')}
+                            disabled={!canMoveRight}
+                            whileHover={canMoveRight ? { scale: 1.1 } : {}}
+                            whileTap={canMoveRight ? { scale: 0.9 } : {}}
+                            className={`p-2 rounded-lg transition-all ${
+                              canMoveRight
+                                ? 'bg-white text-slate-700 hover:bg-blue-500 hover:text-white shadow-sm hover:shadow-md'
+                                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                            }`}
+                            title="Move right"
+                          >
+                            <ChevronRight className="w-5 h-5" />
+                          </motion.button>
+                        </>
+                      )}
                     </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
+
+                    {/* Image */}
+                    <div className="relative h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
+                      {post.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={post.image_url}
+                          alt={post.title}
+                          className="max-w-full max-h-full object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-300">
+                          <Heart className="w-16 h-16 text-gray-400" strokeWidth={1.5} />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-6">
+                      <h3 className="font-bold text-slate-900 text-lg mb-3">
+                        {post.title}
+                      </h3>
+                      <p className="text-sm text-slate-500 mb-4">
+                        By {post.author} • {new Date(post.created_at).toLocaleDateString()}
+                      </p>
+                      <p className="text-slate-600 line-clamp-2 text-sm mb-6 leading-relaxed">
+                        {post.content}
+                      </p>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col gap-2 pt-3 border-t border-slate-200">
+                        {/* Row 1: Edit and Publish */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            onClick={() => handleEdit(post)}
+                            className="flex items-center justify-center gap-2 py-2.5 px-4 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-all font-semibold text-sm"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleTogglePublish(post)}
+                            className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg transition-all font-semibold text-sm ${
+                              post.published
+                                ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                                : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                            }`}
+                          >
+                            {post.published ? (
+                              <>
+                                <Eye className="w-4 h-4" />
+                                Unpublish
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="w-4 h-4" />
+                                Publish
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        
+                        {/* Row 2: Duplicate, Pin, and Delete */}
+                        <div className="grid grid-cols-3 gap-2">
+                          <button
+                            onClick={() => handleDuplicate(post)}
+                            className="flex items-center justify-center gap-1 py-2 px-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-xs font-semibold"
+                          >
+                            <Copy className="w-4 h-4" />
+                            Duplicate
+                          </button>
+                          <button
+                            onClick={() => handleTogglePin(post)}
+                            className={`flex items-center justify-center gap-1 py-2 px-2 rounded-lg transition-all text-xs font-semibold ${
+                              post.is_pinned
+                                ? 'bg-gradient-to-r from-blue-600 to-teal-600 text-white'
+                                : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                            }`}
+                          >
+                            {post.is_pinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+                            {post.is_pinned ? 'Unpin' : 'Pin'}
+                          </button>
+                          <button
+                            onClick={() => handleDelete(post.id)}
+                            className="flex items-center justify-center gap-1 py-2 px-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-xs font-semibold"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </div>
