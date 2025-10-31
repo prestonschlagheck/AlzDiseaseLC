@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Heart } from 'lucide-react';
+import { X, Heart, Link as LinkIcon, Hash } from 'lucide-react';
 import type { NewsPost } from '@/lib/supabase';
 
 export default function NewsFeed() {
@@ -83,11 +83,11 @@ export default function NewsFeed() {
                 className="group"
               >
                 <div
-                  className="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-200 overflow-hidden cursor-pointer h-full group-hover:scale-105"
+                  className="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-200 overflow-hidden cursor-pointer h-full group-hover:scale-105 flex flex-col"
                   onClick={() => setSelectedPost(post)}
                 >
                               {/* Image */}
-                              <div className="relative h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
+                              <div className="relative h-48 bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
                                 {post.image_url ? (
                                   // eslint-disable-next-line @next/next/no-img-element
                                   <img
@@ -108,15 +108,44 @@ export default function NewsFeed() {
                               </div>
 
                   {/* Content */}
-                  <div className="p-6">
+                  <div className="p-6 flex flex-col flex-grow">
                     <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-blue-700 transition-colors">
                       {post.title}
                     </h3>
                     <p className="text-sm text-slate-500 mb-3">By {post.author}</p>
-                    <p className="text-slate-600 line-clamp-3 text-sm">
+                    <p className="text-slate-600 line-clamp-3 text-sm mb-4">
                       {truncateText(post.content, 120)}
                     </p>
-                    <div className="mt-4 text-blue-700 font-semibold text-sm group-hover:text-blue-800 transition-colors">
+                    
+                    {/* Links and Hashtags */}
+                    {(post.links && post.links.length > 0) || (post.hashtags && post.hashtags.length > 0) ? (
+                      <div className="mb-4 flex flex-wrap gap-2">
+                        {post.links && post.links.map((link, index) => (
+                          <a
+                            key={index}
+                            href={link.startsWith('http') ? link : `https://${link}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1.5 bg-blue-500/20 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-500/30 transition-colors border border-blue-200/50"
+                          >
+                            <LinkIcon className="w-3.5 h-3.5" />
+                            <span className="max-w-[120px] truncate">{link}</span>
+                          </a>
+                        ))}
+                        {post.hashtags && post.hashtags.map((hashtag, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center gap-1.5 bg-teal-500/20 text-teal-700 px-3 py-1.5 rounded-lg text-xs font-medium border border-teal-200/50"
+                          >
+                            <Hash className="w-3.5 h-3.5" />
+                            {hashtag}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                    
+                    <div className="mt-auto text-blue-700 font-semibold text-sm group-hover:text-blue-800 transition-colors">
                       Read More →
                     </div>
                   </div>
@@ -190,6 +219,35 @@ export default function NewsFeed() {
                 <div className="prose prose-lg max-w-none text-slate-700 whitespace-pre-wrap leading-relaxed">
                   {selectedPost.content}
                 </div>
+
+                {/* Links and Hashtags */}
+                {(selectedPost.links && selectedPost.links.length > 0) || (selectedPost.hashtags && selectedPost.hashtags.length > 0) ? (
+                  <div className="mt-6 pt-6 border-t border-slate-200">
+                    <div className="flex flex-wrap gap-3">
+                      {selectedPost.links && selectedPost.links.map((link, index) => (
+                        <a
+                          key={index}
+                          href={link.startsWith('http') ? link : `https://${link}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-500/30 transition-colors border border-blue-200/50"
+                        >
+                          <LinkIcon className="w-4 h-4" />
+                          <span className="max-w-[200px] truncate">{link}</span>
+                        </a>
+                      ))}
+                      {selectedPost.hashtags && selectedPost.hashtags.map((hashtag, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center gap-2 bg-teal-500/20 text-teal-700 px-4 py-2 rounded-lg text-sm font-medium border border-teal-200/50"
+                        >
+                          <Hash className="w-4 h-4" />
+                          {hashtag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </motion.div>
           </motion.div>

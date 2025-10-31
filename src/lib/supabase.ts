@@ -11,6 +11,8 @@ export type NewsPost = {
   author: string;
   content: string;
   image_url: string | null;
+  links: string[] | null;
+  hashtags: string[] | null;
   is_pinned: boolean;
   published: boolean;
   deleted: boolean;

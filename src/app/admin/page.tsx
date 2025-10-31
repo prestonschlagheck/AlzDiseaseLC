@@ -21,7 +21,9 @@ import {
   Copy,
   RotateCcw,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Link as LinkIcon,
+  Hash
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -41,7 +43,11 @@ export default function AdminDashboard() {
     author: '',
     content: '',
     image_url: '',
+    links: [] as string[],
+    hashtags: [] as string[],
   });
+  const [linkInput, setLinkInput] = useState('');
+  const [hashtagInput, setHashtagInput] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState('');
   const [deletedPosts, setDeletedPosts] = useState<NewsPost[]>([]);
@@ -223,7 +229,9 @@ export default function AdminDashboard() {
       }
 
       // Reset form
-      setFormData({ title: '', author: '', content: '', image_url: '' });
+      setFormData({ title: '', author: '', content: '', image_url: '', links: [], hashtags: [] });
+      setLinkInput('');
+      setHashtagInput('');
       setUploadedFileName('');
       setShowForm(false);
       setEditingPost(null);
@@ -411,9 +419,53 @@ export default function AdminDashboard() {
       author: post.author,
       content: post.content,
       image_url: post.image_url || '',
+      links: post.links || [],
+      hashtags: post.hashtags || [],
     });
+    setLinkInput('');
+    setHashtagInput('');
     setUploadedFileName(post.image_url ? 'Current image' : '');
     setShowForm(true);
+  };
+
+  const handleAddLink = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const link = linkInput.trim();
+      if (link && !formData.links.includes(link)) {
+        setFormData({ ...formData, links: [...formData.links, link] });
+        setLinkInput('');
+      }
+    }
+  };
+
+  const handleRemoveLink = (index: number) => {
+    setFormData({
+      ...formData,
+      links: formData.links.filter((_, i) => i !== index),
+    });
+  };
+
+  const handleAddHashtag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      let hashtag = hashtagInput.trim();
+      // Remove # if user typed it
+      if (hashtag.startsWith('#')) {
+        hashtag = hashtag.substring(1);
+      }
+      if (hashtag && !formData.hashtags.includes(hashtag)) {
+        setFormData({ ...formData, hashtags: [...formData.hashtags, hashtag] });
+        setHashtagInput('');
+      }
+    }
+  };
+
+  const handleRemoveHashtag = (index: number) => {
+    setFormData({
+      ...formData,
+      hashtags: formData.hashtags.filter((_, i) => i !== index),
+    });
   };
 
   const movePost = async (postIndex: number, direction: 'left' | 'right') => {
@@ -558,7 +610,9 @@ export default function AdminDashboard() {
           <button
             onClick={() => {
               setEditingPost(null);
-              setFormData({ title: '', author: '', content: '', image_url: '' });
+              setFormData({ title: '', author: '', content: '', image_url: '', links: [], hashtags: [] });
+              setLinkInput('');
+              setHashtagInput('');
               setUploadedFileName('');
               setShowForm(true);
             }}
@@ -644,6 +698,77 @@ export default function AdminDashboard() {
                     />
                   </div>
 
+                  {/* Links */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Links (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={linkInput}
+                      onChange={(e) => setLinkInput(e.target.value)}
+                      onKeyDown={handleAddLink}
+                      placeholder="Type a link and press Enter to add"
+                      className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                    />
+                    {formData.links.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {formData.links.map((link, index) => (
+                          <div
+                            key={index}
+                            className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-sm"
+                          >
+                            <LinkIcon className="w-4 h-4" />
+                            <span className="max-w-[200px] truncate">{link}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveLink(index)}
+                              className="ml-1 text-blue-700 hover:text-blue-900"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Hashtags */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Hashtags (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={hashtagInput}
+                      onChange={(e) => setHashtagInput(e.target.value)}
+                      onKeyDown={handleAddHashtag}
+                      placeholder="Type a hashtag and press Enter to add"
+                      className="w-full px-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                    />
+                    {formData.hashtags.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {formData.hashtags.map((hashtag, index) => (
+                          <div
+                            key={index}
+                            className="inline-flex items-center gap-2 bg-teal-100 text-teal-700 px-3 py-1.5 rounded-lg text-sm"
+                          >
+                            <Hash className="w-4 h-4" />
+                            {hashtag}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveHashtag(index)}
+                              className="ml-1 text-teal-700 hover:text-teal-900"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Image */}
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">
                       Image (Optional)
