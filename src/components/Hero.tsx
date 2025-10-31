@@ -151,7 +151,7 @@ export function Hero() {
 
       {/* Main Content */}
       <div className="relative z-10 flex items-center h-full px-6 lg:px-12 py-8 lg:py-0">
-        <div className="max-w-7xl mx-auto w-full space-y-8">
+        <div className="max-w-7xl mx-auto w-full space-y-10">
           
           {/* Logo - Centered Above Title */}
           <motion.div
@@ -202,10 +202,10 @@ export function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.7 }}
-            className="space-y-6 text-center"
+            className="space-y-8 text-center py-4"
           >
             <motion.p 
-              className="text-sm sm:text-base lg:text-lg text-blue-100 leading-relaxed font-sans max-w-5xl mx-auto"
+              className="text-xs sm:text-sm lg:text-base text-blue-100 leading-relaxed font-sans max-w-5xl mx-auto py-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.8 }}
@@ -213,7 +213,7 @@ export function Hero() {
               Your trusted hub for Alzheimer&apos;s education grounded in peer-reviewed science and designed for real-world impact. Through expert interviews, case discussions, multidisciplinary panels, and patient-caregiver perspectives, leading clinicians translate current evidence into actionable steps for screening, diagnosis, treatment, and longitudinal support.
             </motion.p>
             <motion.p 
-              className="text-sm sm:text-base lg:text-lg text-blue-100 leading-relaxed font-sans max-w-5xl mx-auto"
+              className="text-xs sm:text-sm lg:text-base text-blue-100 leading-relaxed font-sans max-w-5xl mx-auto py-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.9 }}

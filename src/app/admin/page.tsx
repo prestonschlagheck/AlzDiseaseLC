@@ -479,9 +479,9 @@ export default function AdminDashboard() {
   // Admin Dashboard
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-slate-50/30 to-blue-50/20">
-      {/* Header */}
+          {/* Header */}
       <div className="bg-white shadow-md border-b-2 border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-6 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-8 flex justify-between items-center">
           <h1 className="text-3xl lg:text-4xl font-bold text-slate-900">
             Alzheimer&apos;s LC{' '}
             <span className="bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">Admin Dashboard</span>
@@ -500,9 +500,9 @@ export default function AdminDashboard() {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-8">
+      <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
         {/* Action Buttons */}
-        <div className="mb-8 flex items-center gap-4">
+        <div className="mb-12 flex items-center gap-6">
           <button
             onClick={() => {
               setEditingPost(null);
@@ -647,8 +647,8 @@ export default function AdminDashboard() {
         </AnimatePresence>
 
         {/* Posts List with Drag & Drop */}
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-8">
-          <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-8">
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-10">
+          <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-10">
             All Posts <span className="text-slate-500">({posts.length})</span>
           </h2>
 
@@ -657,13 +657,14 @@ export default function AdminDashboard() {
               No posts yet. Create your first post to get started!
             </p>
           ) : (
-            <DragDropContext onDragEnd={handleDragEnd}>
+            <div className="overflow-hidden">
+              <DragDropContext onDragEnd={handleDragEnd}>
                 <Droppable droppableId="posts">
                   {(provided) => (
                     <div
                       {...provided.droppableProps}
                       ref={provided.innerRef}
-                      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
                     >
                       {posts.map((post, index) => (
                         <Draggable key={post.id} draggableId={post.id} index={index} isDragDisabled={post.is_pinned}>
@@ -671,14 +672,22 @@ export default function AdminDashboard() {
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
+                              style={{
+                                ...provided.draggableProps.style,
+                                ...(snapshot.isDragging && {
+                                  // Constrain to horizontal movement only by removing translateY
+                                  transform: provided.draggableProps.style?.transform?.replace(/,\s*translateY\([^)]+\)/g, '') || provided.draggableProps.style?.transform,
+                                  position: 'relative' as const,
+                                }),
+                              }}
                               className={`bg-white rounded-3xl shadow-xl overflow-hidden border-2 transition-all ${
-                                snapshot.isDragging ? 'border-blue-500 scale-105' : 'border-slate-200'
+                                snapshot.isDragging ? 'border-blue-500 scale-105 z-50' : 'border-slate-200'
                               } ${post.is_pinned ? 'ring-2 ring-blue-400' : ''}`}
                             >
                               {/* Drag Handle */}
                               <div
                                 {...(post.is_pinned ? {} : provided.dragHandleProps)}
-                                className={`p-3 flex items-center justify-center transition-colors ${
+                                className={`p-4 flex items-center justify-center transition-colors ${
                                   post.is_pinned 
                                     ? 'bg-gradient-to-r from-blue-100 to-teal-100 cursor-not-allowed' 
                                     : 'bg-slate-100 cursor-grab active:cursor-grabbing hover:bg-slate-200'
@@ -707,14 +716,14 @@ export default function AdminDashboard() {
                               </div>
 
                               {/* Content */}
-                              <div className="p-5">
-                                <h3 className="font-bold text-slate-900 text-lg mb-2">
+                              <div className="p-6">
+                                <h3 className="font-bold text-slate-900 text-lg mb-3">
                                   {post.title}
                                 </h3>
-                                <p className="text-sm text-slate-500 mb-3">
+                                <p className="text-sm text-slate-500 mb-4">
                                   By {post.author} • {new Date(post.created_at).toLocaleDateString()}
                                 </p>
-                                <p className="text-slate-600 line-clamp-2 text-sm mb-4">
+                                <p className="text-slate-600 line-clamp-2 text-sm mb-6 leading-relaxed">
                                   {post.content}
                                 </p>
 
@@ -790,17 +799,18 @@ export default function AdminDashboard() {
                   )}
                 </Droppable>
               </DragDropContext>
+            </div>
           )}
         </div>
 
         {/* Deleted Posts Section */}
         {deletedPosts.length > 0 && (
-          <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-8 mt-8">
-            <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-8">
+          <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-10 mt-12">
+            <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-10">
               Deleted Posts <span className="text-slate-500">({deletedPosts.length})</span>
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {deletedPosts.map((post) => (
                 <div
                   key={post.id}
@@ -829,14 +839,14 @@ export default function AdminDashboard() {
                   </div>
 
                   {/* Content */}
-                  <div className="p-5">
-                    <h3 className="font-bold text-slate-900 text-lg mb-2">
+                  <div className="p-6">
+                    <h3 className="font-bold text-slate-900 text-lg mb-3">
                       {post.title}
                     </h3>
-                    <p className="text-sm text-slate-500 mb-3">
+                    <p className="text-sm text-slate-500 mb-4">
                       By {post.author} • {new Date(post.created_at).toLocaleDateString()}
                     </p>
-                    <p className="text-slate-600 line-clamp-2 text-sm mb-4">
+                    <p className="text-slate-600 line-clamp-2 text-sm mb-6 leading-relaxed">
                       {post.content}
                     </p>
 
